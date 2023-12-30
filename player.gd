@@ -7,16 +7,43 @@ extends CharacterBody2D
 @export var speed = 400
 #location of animations
 @onready var anim = get_node("AnimatedSprite2D/AnimationPlayer")
+@onready var anim_tree : AnimationTree = $AnimationTree
+var input_direction : Vector2 = Vector2.ZERO
+
+func _ready():
+	anim_tree.active = true
+func _process(delta):
+	update_animation_parameters()
 #using input from project input map
 #project->project settings->input map (top tabs of widnow)
 func get_input():
-	var input_direction = Input.get_vector("left", "right", "up", "down")
+	input_direction = Input.get_vector("left", "right", "up", "down")
 	velocity = input_direction * speed
-
+	
 func _physics_process(delta):
 	get_input()
 	move_and_slide()
 
+func update_animation_parameters():
+	if velocity == Vector2.ZERO:
+		anim_tree["parameters/conditions/idle"] = true
+		anim_tree["parameters/conditions/walk"] = false
+	else:
+		anim_tree["parameters/conditions/idle"] = false
+		anim_tree["parameters/conditions/walk"] = true
+	if Input.is_action_just_pressed("left click"):
+		anim_tree["parameters/conditions/swing"] = true
+	else:
+		anim_tree["parameters/conditions/swing"] = false
+	if input_direction != Vector2.ZERO:
+		anim_tree["parameters/idle/blend_position"] = input_direction
+		anim_tree["parameters/walk/blend_position"] = input_direction
+		anim_tree["parameters/attack_1/blend_position"] = input_direction
+		
+		
+#func _on_animation_player_animation_finished(anim_name):
+#	if anim_name == "attack_1":
+#		anim.play("idle")
 
 
 
@@ -58,3 +85,6 @@ func _physics_process(delta):
 		#velocity.y = move_toward(velocity.y, 0, SPEED)
 		#anim.play("idle")
 	#move_and_slide()
+
+
+
